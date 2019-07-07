@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>MovieLabs - Movie Details</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/custom-style.css">
+	<link rel="stylesheet" href="css/grt-youtube-popup.css">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,500|Varela+Round" rel="stylesheet">
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script>
+		// mengambil id film pada url
+		var url_string = window.location.href;
+		var url = new URL(url_string);
+		var id = url.searchParams.get("id");
+
+		var api = `http://api.themoviedb.org/3/movie/${id}?api_key=cf2bfce5f534530b1292590add9ae426&language=en-&append_to_response=videos`
+
+		$.getJSON(api, function (data) {
+			// data yg digunakan pada backdrop
+			var id 			= data.id;
+			var bdPath 		= data.backdrop_path;
+			var movieTitle 	= data.original_title;
+			var rating 		= data.vote_average;
+			var bahasa		= data.original_language;
+			var runtime 	= data.runtime;
+
+			var releaseDate	= data.release_date;
+			var tahunRilis  = releaseDate.substring(0, 4);
+
+			var trailerKey  = data.videos.results[0].key;
+
+			var listGenre = "";
+			for(var i = 0; i < data.genres.length; i++) {
+				listGenre += data.genres[i].name + " ";
+			}
+
+			$('.backdrop__div').append(`
+				<div class="backdrop__opacity"></div>
+				<img src="http://image.tmdb.org/t/p/original/${bdPath}" alt="backdrop_img" class="backdrop__image">
+
+				<div class="backdrop__movie__info">
+					<div class="container">
+						<h1 class="backdrop__movie__title">${movieTitle}</h1>
+						<p class="backdrop__movie__genre">
+							${listGenre}
+						</p>
+
+						<button class="backdrop__trailer__btn youtube-link" youtubeid="${trailerKey}">
+							Watch Trailer
+							<img class="trailer__btn__icon" src="https://img.icons8.com/material-outlined/48/000000/play-button-circled.png">
+						</button>
+					</div>
+				</div>
+
+				<div class="backdrop__additional__info">
+					<div class="row">
+						<div class="col">
+							<p class="backdrop__info__header">Movie Language</p>
+							<h4 class="backdrop__info__text">${bahasa}</h4>
+						</div>
+						<div class="col">
+							<p class="backdrop__info__header">Release Year</p>
+							<h4 class="backdrop__info__text">${tahunRilis}</h4>
+						</div>
+						<div class="col">
+							<p class="backdrop__info__header">Movie Rating</p>
+							<h4 class="backdrop__info__text">${rating}</h4>
+						</div>
+						<div class="col">
+							<p class="backdrop__info__header">Movie Runtime</p>
+							<h4 class="backdrop__info__text">${runtime} <span>min.</span></h4>
+						</div>
+					</div>
+				</div>
+			`);
+
+			// data yg digunakan pada detail film
+			var posterPath 	= data.poster_path;
+			var overview	= data.overview;
+
+			$('.movie__detail__info').append(`
+				<div class="row">
+					<div class="col-md-5 col-lg-3">
+						<div class="movie__poster__container">
+							<img src="http://image.tmdb.org/t/p/original/${posterPath}" alt="movie_poster">
+						</div>
+					</div>
+					<div class="col-md-7 col-lg-9">
+						<p class="movie__synopsis">
+							${overview}
+						</p>
+					</div>
+				</div>
+			`);
+		});
+
+		var similar_movie_api = `https://api.themoviedb.org/3/movie/${id}/similar?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+			
+		$.getJSON(similar_movie_api, function (data) {
+			for( var i =0; i < 5; i++){
+				var poster = data.results[i].poster_path;
+				var id = data.results[i].id;
+				var judul = data.results[i].original_title;
+				var rating = data.results[i].vote_average;
+
+				$('.similar__movie__content').append(`
+					<div class="similar__movie__item">
+						<div class="similar__movie__item__poster">
+							<img src="http://image.tmdb.org/t/p/original${poster}" alt="Movie-Poster">
+						</div>
+						<div class="similar__movie__item__info">
+							<a href="detail_movie.html?type=movie&id=${id}">${judul}</a>
+							<p>${rating}</p>
+						</div>
+					</div>
+				`);
+			}
+		
+		});
+
+		var reviews = `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+
+		$.getJSON(reviews, function (data) {
+			for(var i = 0; i < 3; i++) {
+				var author = data.results[i].author;
+				var komentar = data.results[i].content;
+
+				$('.reviews__container').append(`
+					<div class="review__item">
+						<h6>${author}</h6>
+						<p>
+							${komentar}
+						</p>
+					</div>
+				`);
+			}
+		});
+	</script>
+</head>
+<body class="detail__movie__body">
+	<div class="overlay"></div>
+	<nav id="sidebar" class="sidebar--nonactive">
+		<ul class="sidebar__nav__lists">
+			<li class="nav-item">
+				<a href="index.html">Home</a>
+			</li>
+			<li class="nav-item dropdown">
+				<a href="#" class="sidebar-dropdown-toggle">Genre</a>
+
+				<ul class="sidebar__dropdown__list">
+					<li><a href="movie_genre.html?genre_id=28">Action</a></li>
+					<li><a href="movie_genre.html?genre_id=12">Adventure</a></li>
+					<li><a href="movie_genre.html?genre_id=878">Sci-Fi</a></li>
+					<li><a href="movie_genre.html?genre_id=43">Thriller</a></li>
+					<li><a href="movie_genre.html?genre_id=27">Horror</a></li>
+					<li><a href="movie_genre.html?genre_id=36">History</a></li>
+				</ul>
+			</li>
+			<li class="nav-item">
+				<a href="contact.html">Contact Us</a>
+			</li>
+			<li class="nav-item">
+				<a href="faq.html">FaQ</a>
+			</li>
+		</ul>
+	</nav>
+
+	<nav class="navbar navbar-expand-lg navbar-dark transparent-nav">
+		<div class="container">
+			<button class="navbar-toggler" type="button" data-toggle="collapse"
+				aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<!-- <span class="navbar-toggler-icon"></span> -->
+				<span></span>
+				<span></span>
+				<span></span>
+			</button>
+
+			<a class="navbar-brand" href="index.html">
+				<img src="resources/logo/logo.png" alt="movie-labs-logo">
+			</a>
+			
+			<div class="collapse navbar-collapse">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item active">
+						<a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+					</li>
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown"
+							aria-haspopup="true" aria-expanded="false">
+							Genre
+						</a>
+						<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+							<div class="row">
+								<div class="col-md-6">
+									<a class="dropdown-item" href="movie_genre.html?genre_id=28">Action</a>
+									<a class="dropdown-item" href="movie_genre.html?genre_id=12">Adventure</a>
+									<a class="dropdown-item" href="movie_genre.html?genre_id=878">Sci-Fi</a>
+								</div>
+								<div class="col-md-6">
+									<a class="dropdown-item" href="movie_genre.html?genre_id=43">Thriller</a>
+									<a class="dropdown-item" href="movie_genre.html?genre_id=27">Horror</a>
+									<a class="dropdown-item" href="movie_genre.html?genre_id=36">History</a>
+								</div>
+							</div>
+						</div>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="contact.html">Contact Us</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="faq.html">FaQ</a>
+					</li>
+				</ul>
+			</div>
+
+			<div class="form-input-container my-2 my-lg-0 d-none d-lg-block">
+					<div class="input-group header-input">
+						<input type="text" class="form-control search-movie" placeholder="Cari Film"
+							aria-label="Recipient's username" aria-describedby="basic-addon2" id="desktop-search-input">
+						<div class="input-group-append">
+							<button class="btn btn-outline-secondary" type="button" id="desktop-search-btn">
+								<img src="resources/icons/find-icon.png" alt="Find Icon">
+							</button>
+						</div>
+					</div>
+				</div>
+
+			<button class="mobile__search__button d-lg-none" id="mobile-search-btn">
+				<img src="resources/icons/icons8-search-25-white.png" alt="Find Icon">
+			</button>
+
+			<div class="mobile__search__container">
+				<div id="search-close-btn">
+					<img src="resources/icons/close-btn.png" alt="Close Button">
+				</div>
+
+				<div class="mobile-form-container">
+						<textarea name="mobile-search" id="mobile-search-input" placeholder="Cari..." rows="4" ></textarea>
+						<input type="submit" value="Cari Film" id="mobile-search-trigger">
+					</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="backdrop__div">
+		
+	</div>
+
+	<main class="movie__article">
+		<div class="container">
+			<div class="movie__detail__info">
+				
+			</div>
+
+			<div class="similar__movies">
+				<h3 class="similar__movies__header">Similar Movies</h3>
+
+				<div class="similar__movie__content">
+						
+				</div>
+			</div>
+
+			<div class="comments__div">
+				<div class="container-fluid">
+					<h3>Add Your Review</h3>
+
+					<form action="#" class="comments__div__form">
+						<input type="text" name="comment_user" placeholder="Nama" required>
+						<input type="email" name="comment_email" placeholder="Email" required>
+						<textarea name="comment_content" cols="30" rows="5" placeholder="Review Anda" required></textarea>
+
+						<input type="submit" value="Kirim">
+					</form>
+				</div>
+			</div>
+
+			<div class="reviews__div">
+				<div class="container-fluid">
+					<h3>Reviews</h3>
+
+					<div class="reviews__container">
+						
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+	</main>
+
+	<footer>
+		<div class="container-fluid">
+			<h1>MovieLabs.</h1>
+			<ul class="footer__lists">
+				<li><a href="#">Contact Us</a></li>
+				<li><a href="#">About Us</a></li>
+				<li><a href="#">FaQ</a></li>
+			</ul>
+		</div>
+	</footer>
+	
+
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+		integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+		crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+		integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+		crossorigin="anonymous"></script>
+
+	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+	<script src="js/grt-youtube-popup.js"></script>
+	<script>
+		$(document).ready(function () {
+			$('.sidebar__dropdown__list').hide();
+			$('.sidebar-dropdown-toggle').click(function () {
+				$('.sidebar__dropdown__list').slideToggle();
+			});
+
+			// fungsi apabila tombol sidebar diklik
+			$('.navbar-toggler').click(function (e) {
+				$('nav#sidebar').addClass('sidebar--active');
+				$('.overlay').fadeToggle("slow");
+				$('body').css('overflow', 'hidden');
+			});
+
+			// fungsi apabila overlay diklik
+			// (menutup sidebar dan menghilangkan overlay)
+			$('.overlay').click(function (e) {
+				$('nav#sidebar').removeClass('sidebar--active');
+				$('.overlay').fadeOut("fast");
+				$('body').css('overflow', 'auto');
+			});
+
+			// fungsi apabila tombol search mobile diklik
+			$('#mobile-search-btn').click(function() {
+				$('.mobile__search__container').fadeIn("fast");
+				$('body').css('overflow', 'hidden');
+			});
+
+			// fungsi apabila tombol close pada search mobile diklik
+			$('#search-close-btn').click(function() {
+				$('.mobile__search__container').fadeOut("fast");
+				$('body').css('overflow', 'auto');
+			});
+
+			$(".youtube-link").grtyoutube();
+
+			//fungsi tombol pencarian desktop
+			$('#desktop-search-btn').click(function(){
+				var keyword = $('#desktop-search-input').val();
+				window.location.replace('search_result.html?pencarian=' + keyword);
+			});
+
+			$('#desktop-search-input').on('keyup keypress', function(e){
+				var keyword = $(this).val();
+				var keyCode = e.keyCode || e.which;
+				if(keyCode == 13) {
+					window.location.replace('search_result.html?pencarian=' + keyword);
+				}
+			});
+
+			//fungsi tombol pencarian mobile
+			$('#mobile-search-trigger').click(function(){
+				var keyword = $('#mobile-search-input').val();
+				window.location.replace('search_result.html?pencarian=' + keyword);
+			});
+		});
+
+	</script>
+</body>
+</html>
