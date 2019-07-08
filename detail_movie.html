@@ -16,129 +16,273 @@
 		var url_string = window.location.href;
 		var url = new URL(url_string);
 		var id = url.searchParams.get("id");
+		var tipe = url.searchParams.get("type");
 
-		var api = `http://api.themoviedb.org/3/movie/${id}?api_key=cf2bfce5f534530b1292590add9ae426&language=en-&append_to_response=videos`
+		if(tipe == "movie") {
+			var api = `http://api.themoviedb.org/3/movie/${id}?api_key=cf2bfce5f534530b1292590add9ae426&language=en-&append_to_response=videos`
 
-		$.getJSON(api, function (data) {
-			// data yg digunakan pada backdrop
-			var id 			= data.id;
-			var bdPath 		= data.backdrop_path;
-			var movieTitle 	= data.original_title;
-			var rating 		= data.vote_average;
-			var bahasa		= data.original_language;
-			var runtime 	= data.runtime;
+			$.getJSON(api, function (data) {
+				// data yg digunakan pada backdrop
+				var id 			= data.id;
+				var bdPath 		= data.backdrop_path;
+				var movieTitle 	= data.original_title;
+				var rating 		= data.vote_average;
+				var bahasa		= data.original_language;
+				var runtime 	= data.runtime;
 
-			var releaseDate	= data.release_date;
-			var tahunRilis  = releaseDate.substring(0, 4);
+				var releaseDate	= data.release_date;
+				var tahunRilis  = releaseDate.substring(0, 4);
 
-			var trailerKey  = data.videos.results[0].key;
+				var trailerKey  = data.videos.results[0].key;
 
-			var listGenre = "";
-			for(var i = 0; i < data.genres.length; i++) {
-				listGenre += data.genres[i].name + " ";
-			}
+				var listGenre = "";
+				for(var i = 0; i < data.genres.length; i++) {
+					listGenre += data.genres[i].name + " ";
+				}
 
-			$('.backdrop__div').append(`
-				<div class="backdrop__opacity"></div>
-				<img src="http://image.tmdb.org/t/p/original/${bdPath}" alt="backdrop_img" class="backdrop__image">
+				$('.backdrop__div').append(`
+					<div class="backdrop__opacity"></div>
+					<img src="http://image.tmdb.org/t/p/original/${bdPath}" alt="backdrop_img" class="backdrop__image">
 
-				<div class="backdrop__movie__info">
-					<div class="container">
-						<h1 class="backdrop__movie__title">${movieTitle}</h1>
-						<p class="backdrop__movie__genre">
-							${listGenre}
-						</p>
+					<div class="backdrop__movie__info">
+						<div class="container">
+							<h1 class="backdrop__movie__title">${movieTitle}</h1>
+							<p class="backdrop__movie__genre">
+								${listGenre}
+							</p>
 
-						<button class="backdrop__trailer__btn youtube-link" youtubeid="${trailerKey}">
-							Watch Trailer
-							<img class="trailer__btn__icon" src="https://img.icons8.com/material-outlined/48/000000/play-button-circled.png">
-						</button>
+							<button class="backdrop__trailer__btn youtube-link" youtubeid="${trailerKey}">
+								Watch Trailer
+								<img class="trailer__btn__icon" src="https://img.icons8.com/material-outlined/48/000000/play-button-circled.png">
+							</button>
+						</div>
 					</div>
-				</div>
 
-				<div class="backdrop__additional__info">
+					<div class="backdrop__additional__info">
+						<div class="row">
+							<div class="col">
+								<p class="backdrop__info__header">Movie Language</p>
+								<h4 class="backdrop__info__text">${bahasa}</h4>
+							</div>
+							<div class="col">
+								<p class="backdrop__info__header">Release Year</p>
+								<h4 class="backdrop__info__text">${tahunRilis}</h4>
+							</div>
+							<div class="col">
+								<p class="backdrop__info__header">Movie Rating</p>
+								<h4 class="backdrop__info__text">${rating}</h4>
+							</div>
+							<div class="col">
+								<p class="backdrop__info__header">Movie Runtime</p>
+								<h4 class="backdrop__info__text">${runtime} <span>min.</span></h4>
+							</div>
+						</div>
+					</div>
+				`);
+
+				// data yg digunakan pada detail film
+				var posterPath 	= data.poster_path;
+				var overview	= data.overview;
+
+				$('.movie__detail__info').append(`
 					<div class="row">
-						<div class="col">
-							<p class="backdrop__info__header">Movie Language</p>
-							<h4 class="backdrop__info__text">${bahasa}</h4>
+						<div class="col-md-5 col-lg-3">
+							<div class="movie__poster__container">
+								<img src="http://image.tmdb.org/t/p/original/${posterPath}" alt="movie_poster">
+							</div>
 						</div>
-						<div class="col">
-							<p class="backdrop__info__header">Release Year</p>
-							<h4 class="backdrop__info__text">${tahunRilis}</h4>
-						</div>
-						<div class="col">
-							<p class="backdrop__info__header">Movie Rating</p>
-							<h4 class="backdrop__info__text">${rating}</h4>
-						</div>
-						<div class="col">
-							<p class="backdrop__info__header">Movie Runtime</p>
-							<h4 class="backdrop__info__text">${runtime} <span>min.</span></h4>
+						<div class="col-md-7 col-lg-9">
+							<p class="movie__synopsis">
+								${overview}
+							</p>
 						</div>
 					</div>
-				</div>
-			`);
+				`);
+			});
 
-			// data yg digunakan pada detail film
-			var posterPath 	= data.poster_path;
-			var overview	= data.overview;
+			var similar_movie_api = `https://api.themoviedb.org/3/movie/${id}/similar?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+				
+			$.getJSON(similar_movie_api, function (data) {
+				for( var i =0; i < 5; i++){
+					var poster = data.results[i].poster_path;
+					var id = data.results[i].id;
+					var judul = data.results[i].original_title;
+					var rating = data.results[i].vote_average;
 
-			$('.movie__detail__info').append(`
-				<div class="row">
-					<div class="col-md-5 col-lg-3">
-						<div class="movie__poster__container">
-							<img src="http://image.tmdb.org/t/p/original/${posterPath}" alt="movie_poster">
+					$('.similar__movie__content').append(`
+						<div class="similar__movie__item">
+							<div class="similar__movie__item__poster">
+								<img src="http://image.tmdb.org/t/p/original${poster}" alt="Movie-Poster">
+							</div>
+							<div class="similar__movie__item__info">
+								<a href="detail_movie.html?type=movie&id=${id}">${judul}</a>
+								<p>${rating}</p>
+							</div>
 						</div>
-					</div>
-					<div class="col-md-7 col-lg-9">
-						<p class="movie__synopsis">
-							${overview}
-						</p>
-					</div>
-				</div>
-			`);
-		});
-
-		var similar_movie_api = `https://api.themoviedb.org/3/movie/${id}/similar?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+					`);
+				}
 			
-		$.getJSON(similar_movie_api, function (data) {
-			for( var i =0; i < 5; i++){
-				var poster = data.results[i].poster_path;
-				var id = data.results[i].id;
-				var judul = data.results[i].original_title;
-				var rating = data.results[i].vote_average;
+			});
 
-				$('.similar__movie__content').append(`
-					<div class="similar__movie__item">
-						<div class="similar__movie__item__poster">
-							<img src="http://image.tmdb.org/t/p/original${poster}" alt="Movie-Poster">
+			var reviews = `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+
+			$.getJSON(reviews, function (data) {
+				if(data.results.length == 0) {
+					$('.reviews__container').append(`
+						<div class="review__item">
+							<h6>Tidak ditemukan Review untuk Film Ini.</h6>
 						</div>
-						<div class="similar__movie__item__info">
-							<a href="detail_movie.html?type=movie&id=${id}">${judul}</a>
-							<p>${rating}</p>
+					`);
+				} else {
+					for(var i = 0; i < 3; i++) {
+						var author = data.results[i].author;
+						var komentar = data.results[i].content;
+
+						$('.reviews__container').append(`
+							<div class="review__item">
+								<h6>${author}</h6>
+								<p>
+									${komentar}
+								</p>
+							</div>
+						`);
+					}
+				}
+			});
+		}
+
+		else {
+			var api = `http://api.themoviedb.org/3/tv/${id}?api_key=cf2bfce5f534530b1292590add9ae426&language=en-&append_to_response=videos`
+
+			$.getJSON(api, function (data) {
+				// data yg digunakan pada backdrop
+				var id = data.id;
+				var bdPath = data.backdrop_path;
+				var judul = data.original_name;
+				var popularity = data.popularity;
+				var rating = data.vote_average;
+				var bahasa = data.original_language;
+
+				var getFirstAir = data.first_air_date;
+				var firstAir = getFirstAir.substring(0, 4);
+
+				var trailerKey = data.videos.results[0].key;
+
+				var listGenre = "";
+				for (var i = 0; i < data.genres.length; i++) {
+					listGenre += data.genres[i].name + " ";
+				}
+
+				$('.backdrop__div').append(`
+					<div class="backdrop__opacity"></div>
+					<img src="http://image.tmdb.org/t/p/original/${bdPath}" alt="backdrop_img" class="backdrop__image">
+
+					<div class="backdrop__movie__info">
+						<div class="container">
+							<h1 class="backdrop__movie__title">${judul}</h1>
+							<p class="backdrop__movie__genre">
+								${listGenre}
+							</p>
+
+							<button class="backdrop__trailer__btn youtube-link" youtubeid="${trailerKey}">
+								Watch Trailer
+								<img class="trailer__btn__icon" src="https://img.icons8.com/material-outlined/48/000000/play-button-circled.png">
+							</button>
+						</div>
+					</div>
+
+					<div class="backdrop__additional__info">
+						<div class="row">
+							<div class="col">
+								<p class="backdrop__info__header">Movie Language</p>
+								<h4 class="backdrop__info__text">${bahasa}</h4>
+							</div>
+							<div class="col">
+								<p class="backdrop__info__header">Release Year</p>
+								<h4 class="backdrop__info__text">${firstAir}</h4>
+							</div>
+							<div class="col">
+								<p class="backdrop__info__header">Movie Rating</p>
+								<h4 class="backdrop__info__text">${rating}</h4>
+							</div>
+							<div class="col">
+								<p class="backdrop__info__header">Popularity</p>
+								<h4 class="backdrop__info__text">${popularity}</h4>
+							</div>
 						</div>
 					</div>
 				`);
-			}
-		
-		});
 
-		var reviews = `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+				// data yg digunakan pada detail film
+				var posterPath = data.poster_path;
+				var overview = data.overview;
 
-		$.getJSON(reviews, function (data) {
-			for(var i = 0; i < 3; i++) {
-				var author = data.results[i].author;
-				var komentar = data.results[i].content;
-
-				$('.reviews__container').append(`
-					<div class="review__item">
-						<h6>${author}</h6>
-						<p>
-							${komentar}
-						</p>
+				$('.movie__detail__info').append(`
+					<div class="row">
+						<div class="col-md-5 col-lg-3">
+							<div class="movie__poster__container">
+								<img src="http://image.tmdb.org/t/p/original/${posterPath}" alt="movie_poster">
+							</div>
+						</div>
+						<div class="col-md-7 col-lg-9">
+							<p class="movie__synopsis">
+								${overview}
+							</p>
+						</div>
 					</div>
 				`);
-			}
-		});
+			});
+
+			var similar_movie_api = `https://api.themoviedb.org/3/tv/${id}/similar?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+
+			$.getJSON(similar_movie_api, function (data) {
+				for (var i = 0; i < 5; i++) {
+					var poster = data.results[i].poster_path;
+					var id = data.results[i].id;
+					var judul = data.results[i].original_name;
+					var rating = data.results[i].vote_average;
+
+					$('.similar__movie__content').append(`
+						<div class="similar__movie__item">
+							<div class="similar__movie__item__poster">
+								<img src="http://image.tmdb.org/t/p/original${poster}" alt="Movie-Poster">
+							</div>
+							<div class="similar__movie__item__info">
+								<a href="detail_movie.html?type=movie&id=${id}">${judul}</a>
+								<p>${rating}</p>
+							</div>
+						</div>
+					`);
+				}
+
+			});
+
+			var reviews = `https://api.themoviedb.org/3/tv/${id}/reviews?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&page=1`;
+
+			$.getJSON(reviews, function (data) {
+				if(data.results.length == 0) {
+					$('.reviews__container').append(`
+						<div class="review__item">
+							<h6>Tidak ditemukan Review untuk Film Ini.</h6>
+						</div>
+					`);
+				} else {
+					for (var i = 0; i < 3; i++) {
+						var author = data.results[i].author;
+						var komentar = data.results[i].content;
+
+						$('.reviews__container').append(`
+							<div class="review__item">
+								<h6>${author}</h6>
+								<p>
+									${komentar}
+								</p>
+							</div>
+						`);
+					}
+				}
+			});
+		}
 	</script>
 </head>
 <body class="detail__movie__body">

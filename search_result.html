@@ -19,24 +19,30 @@
 		var api = `https://api.themoviedb.org/3/search/movie?api_key=cf2bfce5f534530b1292590add9ae426&language=en-US&query=${keyword}&page=1&include_adult=true`;
 		
 		$.getJSON(api, function(data){
-			for(var i = 0; i < data.results.length; i++) {
-				var id			= data.results[i].id;
-				var movieTitle	= data.results[i].original_title;
-				var poster 		= data.results[i].poster_path;
-				var rating 		= data.results[i].vote_average;
-
+			if(data.results.length == 0) {
 				$('.movie__search__results').append(`
-					<div class="movie__list__item">
-						<div class="movie__list__item__poster">
-							<img src="http://image.tmdb.org/t/p/original${poster}" alt="Movie Poster">
+						<h5>Film dengan keyword yang anda cari tidak ditemukan.</h5>
+					`);
+			} else {
+				for(var i = 0; i < data.results.length; i++) {
+					var id			= data.results[i].id;
+					var movieTitle	= data.results[i].original_title;
+					var poster 		= data.results[i].poster_path;
+					var rating 		= data.results[i].vote_average;
+
+					$('.movie__search__results').append(`
+						<div class="movie__list__item">
+							<div class="movie__list__item__poster">
+								<img src="http://image.tmdb.org/t/p/original${poster}" alt="Movie Poster">
+							</div>
+							<div class="movie__list__item__info">
+								<a href="detail_movie.html?type=movie&id=${id}">${movieTitle}</a>
+								<p>${rating}</p>
+							</div>
 						</div>
-						<div class="movie__list__item__info">
-							<a href="detail_movie.html?type=movie&id=${id}">${movieTitle}</a>
-							<p>${rating}</p>
-						</div>
-					</div>
-				`);
-			}	
+					`);
+				}	
+			}
 		});
 	</script>
 </head>
